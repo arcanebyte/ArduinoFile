@@ -52,6 +52,7 @@ const int blue = 24;
 void setup(){
   setLEDColor(1, 0, 0);
   Serial.begin(115200); //start serial communications
+  Serial.println(F("Welcome to ArduinoFile"));
   nonce = EEPROM.read(5);
   EEPROM.write(5, nonce + 1);
   pinMode(22, OUTPUT);
@@ -153,6 +154,7 @@ void loop() {
   //while(readCMD() == 0);
   DDRL = B00000000; //set the bus into input mode so we can read from it
   //PORTC = PORTC | B00100000;
+  delay(1);
   if(PINL != 0x55){ //if the host hasn't responded with 0x55, then something is wrong    MAYBE WHILE INSTEAD OF IF
     sei();
     delay(10);
@@ -238,6 +240,7 @@ void readDrive(){
     }
   } //wait for the host to raise CMD
   DDRL = B00000000; //set the bus into input mode
+  delay(1);
   if(PINL != 0x55){ //and then check to see that the host responded with an 0x55
     sei();
     delay(10);
@@ -633,6 +636,7 @@ void writeDrive(byte response){
     }
   } //wait for the host to raise CMD
   DDRL = B00000000; //set the bus into input mode
+  delay(1);
   if(PINL != 0x55){ //and make sure that the host responded with 0x55
     sei();
     delay(10);
@@ -682,6 +686,7 @@ void writeDrive(byte response){
     }
   } //wait for the host to raise CMD
   DDRL = B00000000; //set the bus into input mode
+  delay(1);
   if(PINL != 0x55){ //and check to ensure that the host responded with an 0x55
     sei();
     delay(10);
