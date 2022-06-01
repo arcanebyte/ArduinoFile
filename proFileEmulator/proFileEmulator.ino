@@ -1,9 +1,12 @@
 //***********************************************************************************
-//* ArduinoFile ProFile Emulator Software                                           *
+//* ArduinoFile ProFile Emulator Software v1.2                                      *
 //* By: Alex Anderson-McLeod                                                        *
 //* Email address: alexelectronicsguy@gmail.com                                     *
 //***********************************************************************************
 
+//Try to get the creatiom/mod dates to do something
+//Add while loops and make sure that there aren't any places where I assume the Lisa will be ready when I am.
+//Maybe switch everything over to a 5V Teensy MCU?
 
 #include <Arduino.h>
 #include <SPI.h>
@@ -13,7 +16,7 @@
 
 byte data[532] = {0x54, 0x68, 0x69, 0x73, 0x20, 0x74, 0x65, 0x73, 0x74, 0x20, 0x70, 0x75, 0x74, 0x73, 0x20, 0x61, 0x20, 0x6c, 0x6f, 0x74, 0x20, 0x6f, 0x66, 0x20, 0x73, 0x74, 0x72, 0x65, 0x73, 0x73, 0x20, 0x6f, 0x6e, 0x20, 0x74, 0x68, 0x65, 0x20, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x69, 0x6e, 0x67, 0x20, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x20, 0x62, 0x79, 0x20, 0x73, 0x77, 0x65, 0x65, 0x70, 0x69, 0x6e, 0x67, 0x20, 0x74, 0x68, 0x65, 0x20, 0x68, 0x65, 0x61, 0x64, 0x73, 0x20, 0x61, 0x63, 0x72, 0x6f, 0x73, 0x73, 0x20, 0x74, 0x68, 0x65, 0x20, 0x64, 0x69, 0x73, 0x6b, 0x20, 0x28, 0x72, 0x65, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x20, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x20, 0x30, 0x2c, 0x20, 0x74, 0x68, 0x65, 0x6e, 0x20, 0x32, 0x35, 0x46, 0x45, 0x2c, 0x20, 0x74, 0x68, 0x65, 0x6e, 0x20, 0x32, 0x2c, 0x20, 0x74, 0x68, 0x65, 0x6e, 0x20, 0x32, 0x35, 0x46, 0x44, 0x2c, 0x20, 0x65, 0x74, 0x63, 0x29, 0x2e, 0x20, 0x49, 0x74, 0x20, 0x61, 0x6c, 0x73, 0x6f, 0x20, 0x72, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x73, 0x20, 0x61, 0x6e, 0x79, 0x20, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x73, 0x20, 0x74, 0x6f, 0x20, 0x74, 0x68, 0x65, 0x20, 0x75, 0x73, 0x65, 0x72, 0x2c, 0x20, 0x61, 0x6c, 0x6f, 0x6e, 0x67, 0x20, 0x77, 0x69, 0x74, 0x68, 0x20, 0x61, 0x6e, 0x20, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x65, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x20, 0x6f, 0x66, 0x20, 0x74, 0x68, 0x65, 0x20, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x20, 0x62, 0x79, 0x74, 0x65, 0x73, 0x20, 0x77, 0x68, 0x65, 0x6e, 0x20, 0x74, 0x68, 0x65, 0x20, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x20, 0x6f, 0x63, 0x63, 0x75, 0x72, 0x72, 0x65, 0x64, 0x2e, 0x20, 0x41, 0x6c, 0x74, 0x68, 0x6f, 0x75, 0x67, 0x68, 0x20, 0x74, 0x68, 0x65, 0x20, 0x41, 0x72, 0x64, 0x75, 0x69, 0x6e, 0x6f, 0x46, 0x69, 0x6c, 0x65, 0x20, 0x72, 0x65, 0x61, 0x64, 0x73, 0x20, 0x74, 0x68, 0x65, 0x20, 0x73, 0x70, 0x61, 0x72, 0x65, 0x20, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x20, 0x74, 0x6f, 0x20, 0x64, 0x65, 0x74, 0x65, 0x72, 0x6d, 0x69, 0x6e, 0x65, 0x20, 0x64, 0x72, 0x69, 0x76, 0x65, 0x20, 0x73, 0x69, 0x7a, 0x65, 0x20, 0x61, 0x75, 0x74, 0x6f, 0x6d, 0x61, 0x74, 0x69, 0x63, 0x61, 0x6c, 0x6c, 0x79, 0x2c, 0x20, 0x79, 0x6f, 0x75, 0x20, 0x63, 0x61, 0x6e, 0x20, 0x70, 0x72, 0x65, 0x73, 0x73, 0x20, 0x22, 0x6e, 0x22, 0x20, 0x61, 0x6e, 0x64, 0x20, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x20, 0x61, 0x20, 0x63, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x20, 0x64, 0x72, 0x69, 0x76, 0x65, 0x20, 0x73, 0x69, 0x7a, 0x65, 0x20, 0x69, 0x6e, 0x20, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73, 0x20, 0x69, 0x66, 0x20, 0x79, 0x6f, 0x75, 0x20, 0x77, 0x61, 0x6e, 0x74, 0x2e, 0x20, 0x41, 0x6c, 0x74, 0x68, 0x6f, 0x75, 0x67, 0x68, 0x20, 0x74, 0x68, 0x65, 0x20, 0x41, 0x72, 0x64, 0x75, 0x69, 0x6e, 0x6f, 0x46, 0x69, 0x6c, 0x65, 0x20, 0x72, 0x65, 0x61, 0x64, 0x73, 0x20, 0x74, 0x68, 0x65, 0x20, 0x73, 0x70, 0x61, 0x72, 0x65, 0x20, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x20, 0x74, 0x6f, 0x20, 0x64, 0x65, 0x74, 0x65, 0x72, 0x6d, 0x69, 0x6e, 0x65, 0x20, 0x64, 0x72, 0x69, 0x76, 0x65, 0x20, 0x73, 0x69, 0x7a, 0x65, 0x20, 0x61, 0x75, 0x74, 0x6f, 0x6d, 0x61, 0x74, 0x69, 0x63, 0x61, 0x6c, 0x6c, 0x79, 0x2c, 0x20, 0x79, 0x6f, 0x75, 0x20, 0x63, 0x61, 0x6e, 0x20, 0x70, 0x72, 0x65, 0x73, 0x73, 0x20, 0x22, 0x6e, 0x22, 0x20, 0x61, 0x6e, 0x64, 0x20, 0x65, 0x6e, 0x74, 0x65}; //the array that holds the block that's currently being read or written
 
-byte spareTable[48] = {0x50, 0x52, 0x4F, 0x46, 0x49, 0x4C, 0x45, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00, 0x00, 0x00, 0x03, 0x98, 0x00, 0x26, 0x00, 0x02, 0x14, 0x20, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x43, 0x61, 0x6D, 0x65, 0x6F, 0x2F, 0x41, 0x70, 0x68, 0x69, 0x64, 0x20, 0x30, 0x30, 0x30, 0x31};
+byte spareTable[48] = {0x50, 0x52, 0x4F, 0x46, 0x49, 0x4C, 0x45, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00, 0x00, 0x00, 0x03, 0x98, 0x00, 0x26, 0x00, 0x02, 0x14, 0x20, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x43, 0x61, 0x6D, 0x65, 0x6F, 0x2F, 0x41, 0x70, 0x68, 0x69, 0x64, 0x20, 0x30, 0x30, 0x30, 0x31}; //the array that holds the spare table
 
 char fileName[256];
 
@@ -31,19 +34,22 @@ File32 disk;
 File32 scratchFile;
 File32 sourceFile;
 File32 destFile;
-File32 KVStore;
-File32 KVCache;
+//File32 KVStore;
+//File32 KVCache;
 FatFile rootDir;
 int fileCount = 0;
 uint16_t nonce;
 uint16_t oldNonce;
 unsigned long freeSpace;
 uint8_t buf[4096];
+uint16_t KVMoniker = 1024;
+uint16_t KVAutoboot = 1557;
 char extension[255] = ".image";
 uint32_t uptime = 0; //if this isn't originally zero, then it resets each time we do the stuff mentioned on the next line down.
 //uint32_t pointerTest = &uptime; //why is this needed to keep uptime from resetting each time we use the four bytes before data[] to store status?
-byte KVKey[20];
-byte CorrectKVKey[20] = {0x6D, 0x75, 0x6F, 0x97, 0xCD, 0xDA, 0xDE, 0x35, 0xF2, 0x4E, 0x6B, 0xA5, 0x88, 0x2F, 0x1A, 0x28, 0x34, 0x5B, 0x2D, 0xFA};
+
+//byte KVKey[20];
+//byte CorrectKVKey[20] = {0x6D, 0x75, 0x6F, 0x97, 0xCD, 0xDA, 0xDE, 0x35, 0xF2, 0x4E, 0x6B, 0xA5, 0x88, 0x2F, 0x1A, 0x28, 0x34, 0x5B, 0x2D, 0xFA};
 
 const int red = 22;
 const int green = 23;
@@ -63,7 +69,7 @@ void setup(){
 
   SD.begin(); //initialize the SD card
   rootDir.open("/");
-  if(!KVStore.open("keyvaluestore.db", O_RDWR)){
+  /*if(!KVStore.open("keyvaluestore.db", O_RDWR)){
     Serial.println(F("Key-value store not found! Creating it now..."));
     if(!KVStore.createContiguous("keyvaluestore.db", 34864620)){
       Serial.println(F("Failed to create key-value store! Halting..."));
@@ -79,12 +85,13 @@ void setup(){
     Serial.println(F("Failed to clear key-value cache! Halting..."));
     while(1);
   }
-  Serial.println(F("Done!"));
+  Serial.println(F("Done!"));*/
 
   if(!disk.open("profile.image", O_RDWR)){
     Serial.println(F("Default drive file profile.image not found! Halting..."));
     while(1);
   }
+
   /*KVCache.seekSet(532*65530);
   KVCache.read(KVKey, 20);
   for(int i = 0; i < 20; i++){
@@ -123,7 +130,6 @@ void setup(){
 }
 
 void loop() {
-  setLEDColor(0, 1, 0);
   initPins(); //set all pins to their idle states
   cli(); //disable interrupts to keep them from slowing things down
   while(readCMD() == 1); //wait for CMD to go low
@@ -136,7 +142,6 @@ void loop() {
     return;
   }
   cli();
-  setLEDColor(0, 0, 0);
   sendData(0x01); //send an 0x01 to the host
   //PORTC = PORTC & B11011111;
   setBSY(); //and lower BSY to acknowledge our presence
@@ -154,16 +159,19 @@ void loop() {
   //while(readCMD() == 0);
   DDRL = B00000000; //set the bus into input mode so we can read from it
   //PORTC = PORTC | B00100000;
-  delay(1);
-  if(PINL != 0x55){ //if the host hasn't responded with 0x55, then something is wrong    MAYBE WHILE INSTEAD OF IF
-    sei();
-    delay(10);
-    Serial.println(F("Phase 1: Host didn't respond with a 55! Maybe the drive was reset?"));
-    delay(10);
-    cli();
-    return; //print out an error message and jump back to the top of the loop to wait for the next handshake from the host
-  }
 
+  currentTime = 0;
+  while(PINL != 0x55){ //wait for the host to respond with an 0x55 and timeout if it doesn't
+    currentTime++;
+    if(currentTime >= timeout){
+      sei();
+      delay(10);
+      Serial.println(F("Phase 1: Host didn't respond with a 55! Maybe the drive was reset?"));
+      delay(10);
+      cli();
+      return;
+    }
+  }
   //!!!TIMEOUT IF R/W IS HIGH!!!
 
   //pointer = commandBuffer; //make the pointer point to the command buffer
@@ -171,6 +179,7 @@ void loop() {
   unsigned int value;
   ogPointer = pointer;
   PORTC = PORTC | B00000010; //if everything checks out, raise BSY
+  setLEDColor(0, 1, 0);
   currentTime = 0;
   byte oldPIN = 0;
   while((PINC & B00000001) == B00000001){ //do this for each of the remaining data bytes and ((PINC | B11111011)) == B11111011
@@ -240,14 +249,17 @@ void readDrive(){
     }
   } //wait for the host to raise CMD
   DDRL = B00000000; //set the bus into input mode
-  delay(1);
-  if(PINL != 0x55){ //and then check to see that the host responded with an 0x55
-    sei();
-    delay(10);
-    Serial.println(F("Read phase 2: Host didn't respond with a 55!"));
-    delay(10);
-    cli();
-    return; //if not, abort and wait for the next handshake from the host
+  currentTime = 0;
+  while(PINL != 0x55){ //wait for the host to respond with an 0x55 and timeout if it doesn't
+    currentTime++;
+    if(currentTime >= timeout){
+      sei();
+      delay(10);
+      Serial.println(F("Read phase 2: Host didn't respond with a 55! Maybe the drive was reset?"));
+      delay(10);
+      cli();
+      return;
+    }
   }
   byteNum = (commandBuffer[1] << 16 | commandBuffer[2] << 8 | commandBuffer[3]);
   if(commandBuffer[1] == 0xFF and commandBuffer[2] == 0xFF and commandBuffer[3] == 0xFF){
@@ -259,6 +271,7 @@ void readDrive(){
     }
   }
   else if(commandBuffer[1] == 0xFF and commandBuffer[2] == 0xFE and commandBuffer[3] == 0xFD){ //emulator status
+    setLEDColor(0, 0, 1); //fix LED issue
     sei();
     char days[5];
     char hours[3];
@@ -280,10 +293,12 @@ void readDrive(){
     for(int i = 8; i < 10; i++){ //uptime
       data[i] = seconds[i % 2];
     }
-    uptime += 2;
     if(nonce != oldNonce){
       freeSpace = SD.vol()->freeClusterCount() * SD.vol()->sectorsPerCluster() * 512;
     }
+
+    uptime += 2;
+
     oldNonce = nonce;
     char bytesFree[16];
     ultoa(freeSpace, bytesFree, 10);
@@ -319,6 +334,7 @@ void readDrive(){
     cli();
   }
   else if(commandBuffer[1] == 0xFF and commandBuffer[2] == 0xFE and commandBuffer[3] == 0xFE){ //get file info
+    setLEDColor(0, 0, 1); //fix LED issue
     sei();
     fileCount = 0;
     rootDir.rewind();
@@ -442,8 +458,27 @@ void readDrive(){
   }
 
   else if(commandBuffer[1] == 0xFF and commandBuffer[2] == 0xFE and commandBuffer[3] == 0xFF){ //retrieve key-value entry from the cache
+    setLEDColor(0, 0, 1); //fix LED issue
     sei();
-    KVCache.seekSet((commandBuffer[4] << 8) | (commandBuffer[5]));
+    if(commandBuffer[4] == 0x53 and commandBuffer[5] == 0x43){
+      Serial.println(F("Loaded moniker/autoboot key-value pair!"));
+      for(int i = 0; i < 532; i++){
+        data[i] = EEPROM.read(KVMoniker + i);
+      }
+    }
+    else if(commandBuffer[4] == 0x53 and commandBuffer[5] == 0x61){
+      Serial.println(F("Loaded autoboot password key-value pair!"));
+      for(int i = 0; i < 532; i++){
+        data[i] = EEPROM.read(KVAutoboot + i);
+      }
+    }
+    else{
+      Serial.println(F("Error: Unsupported key-value load operation!"));
+    }
+    //Moniker address is 5343 in the cache and 53656C6563746F723A20636F6E666967202020D7 in the store
+
+    //Serial.println(F("Warning: The attempted key-value cache read failed because key-value operations are not currently supported!"));
+    /*KVCache.seekSet((commandBuffer[4] << 8) | (commandBuffer[5]));
     Serial.print(F("Reading entry "));
     printDataNoSpace(commandBuffer[4]);
     printDataNoSpace(commandBuffer[5]);
@@ -458,12 +493,13 @@ void readDrive(){
     for(int i = 20; i < 532; i++){
       printDataNoSpace(data[i]);
     }
-    Serial.println();
+    Serial.println();*/
     delay(1);
     cli();
   }
 
   else if(commandBuffer[1] == 0xFF and commandBuffer[2] == 0xFE and commandBuffer[3] == 0xFC){ //selector rescue
+    setLEDColor(0, 0, 1); //fix LED issue
     sei();
     if(commandBuffer[4] == 0xFF and commandBuffer[5] == 0xFF){ //replace selector with a spare from the rescue folder
       int replacementIndex = 0;
@@ -601,7 +637,6 @@ void readDrive(){
     *i = 0x00;
   }
   clearBSY(); //and raise BSY
-
   //startTime = millis();
   currentTime = 0;
   byte *pointer = data - 4; //make the pointer point to the data array
@@ -636,14 +671,17 @@ void writeDrive(byte response){
     }
   } //wait for the host to raise CMD
   DDRL = B00000000; //set the bus into input mode
-  delay(1);
-  if(PINL != 0x55){ //and make sure that the host responded with 0x55
-    sei();
-    delay(10);
-    Serial.println(F("Write phase 2: Host didn't respond with a 55!"));
-    delay(10);
-    cli();
-    return; //if not, print an error message and abort to wait for the next handshake with the host
+  currentTime = 0;
+  while(PINL != 0x55){ //wait for the host to respond with an 0x55 and timeout if it doesn't
+    currentTime++;
+    if(currentTime >= timeout){
+      sei();
+      delay(10);
+      Serial.println(F("Write phase 2: Host didn't respond with a 55! Maybe the drive was reset?"));
+      delay(10);
+      cli();
+      return;
+    }
   }
   clearBSY(); //if everything looks good, raise BSY
 
@@ -686,14 +724,17 @@ void writeDrive(byte response){
     }
   } //wait for the host to raise CMD
   DDRL = B00000000; //set the bus into input mode
-  delay(1);
-  if(PINL != 0x55){ //and check to ensure that the host responded with an 0x55
-    sei();
-    delay(10);
-    Serial.println(F("Write phase 3: Host didn't respond with a 55!"));
-    delay(10);
-    cli();
-    return; //if not, print an error message and return to the beginning of the loop to wait for the next handshake
+  currentTime = 0;
+  while(PINL != 0x55){ //wait for the host to respond with an 0x55 and timeout if it doesn't
+    currentTime++;
+    if(currentTime >= timeout){
+      sei();
+      delay(10);
+      Serial.println(F("Write phase 3: Host didn't respond with a 55! Maybe the drive was reset?"));
+      delay(10);
+      cli();
+      return;
+    }
   }
   bool halt = false;
   byteNum = (commandBuffer[1] << 16 | commandBuffer[2] << 8 | commandBuffer[3]);
@@ -702,8 +743,10 @@ void writeDrive(byte response){
     if(data[0] == 0x48 and data[1] == 0x41 and data[2] == 0x4C and data[3] == 0x54){ //halt
       halt = true;
       Serial.println(F("Halting emulator..."));
+      setLEDColor(1, 1, 1);
     }
     if(data[0] == 0x49 and data[1] == 0x4D and data[2] == 0x41 and data[3] == 0x47 and data[4] == 0x45 and data[5] == 0x3A){ //switch image files
+      setLEDColor(0, 0, 1); //fix LED issue
       Serial.print(F("Switching to image file "));
       int i = 6;
       while(1){
@@ -733,7 +776,30 @@ void writeDrive(byte response){
     delay(10);
     cli();
   }
+  else if(commandBuffer[1] == 0xFF and commandBuffer[2] == 0xFE and commandBuffer[3] == 0xFF){
+    setLEDColor(0, 0, 1); //fix LED issue
+    sei();
+    if(commandBuffer[4] == 0xFF and commandBuffer[5] == 0xFF);
+    else if(commandBuffer[4] == 0x53 and commandBuffer[5] == 0x43){
+      Serial.println(F("Wrote to moniker/autoboot key-value pair!"));
+      for(int i = 0; i < 532; i++){
+        EEPROM.write(KVMoniker + i, data[i]);
+      }
+    }
+    else if(commandBuffer[4] == 0x53 and commandBuffer[5] == 0x61){
+      Serial.println(F("Wrote to autoboot password key-value pair!"));
+      for(int i = 0; i < 532; i++){
+        EEPROM.write(KVAutoboot + i, data[i]);
+      }
+    }
+    else{
+      Serial.println(F("Error: Unsupported key-value write operation!"));
+    }
+    delay(1);
+    cli();
+  }
   else if(commandBuffer[1] == 0xFF and commandBuffer[2] == 0xFE and commandBuffer[3] == 0xFE){ //FS commands
+    setLEDColor(0, 0, 1); //fix LED issue
     sei();
     if(commandBuffer[4] == 0x63 and commandBuffer[5] == 0x70){ //copy
       Serial.print(F("Copying "));
@@ -783,6 +849,7 @@ void writeDrive(byte response){
       destFile.close();
     }
     else if(commandBuffer[4] == 0x6D and commandBuffer[5] == 0x6B){ //create new image, normal
+      setLEDColor(0, 0, 1); //fix LED issue
       Serial.print(F("Making new 5MB image called "));
       int i = 0;
       while(1){
@@ -805,6 +872,7 @@ void writeDrive(byte response){
       destFile.close();
     }
     else if(commandBuffer[4] == 0x6D and commandBuffer[5] == 0x78){ //create new image, extended
+      setLEDColor(0, 0, 1); //fix LED issue
       Serial.print(F("Making new image of size "));
       int i = 0;
       while(1){
@@ -841,6 +909,7 @@ void writeDrive(byte response){
       destFile.close();
     }
     else if(commandBuffer[4] == 0x72 and commandBuffer[5] == 0x6D){ //delete
+      setLEDColor(0, 0, 1); //fix LED issue
       int i = 0;
       Serial.print(F("Deleting file "));
       while(1){
@@ -860,6 +929,7 @@ void writeDrive(byte response){
       EEPROM.write(5, nonce + 1);
     }
     else if(commandBuffer[4] == 0x6D and commandBuffer[5] == 0x76){ //move aka rename
+      setLEDColor(0, 0, 1); //fix LED issue
       Serial.print(F("Renaming "));
       int i = 0;
       while(1){
@@ -898,6 +968,7 @@ void writeDrive(byte response){
       EEPROM.write(5, nonce + 1);
     }
     else if(commandBuffer[4] == 0x73 and commandBuffer[5] == 0x78){ //sx (set extension)
+      setLEDColor(0, 0, 1); //fix LED issue
       int i = 0;
       while(1){
         if(data[i] == 0x00){
@@ -1018,10 +1089,12 @@ void updateSpareTable(){
 //all of these functions just make it easier to set, clear, and read the control signals for the drive
 
 void setBSY(){
+  setLEDColor(0, 0, 0);
   PORTC = PORTC & B11111101;
 }
 
 void clearBSY(){
+  setLEDColor(0, 1, 0);
   PORTC = PORTC | B00000010;
 }
 
