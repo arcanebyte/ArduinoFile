@@ -1,18 +1,42 @@
 //***********************************************************************************
-//* ArduinoFile ProFile Emulator Software v1.2                                      *
-//* By: Alex Anderson-McLeod                                                        *
-//* Email address: alexelectronicsguy@gmail.com                                     *
+//* ArduinoFile ProFile Emulator Software v2.0                                      *
+//* Alex Anderson-McLeod <alexelectronicsguy@gmail.com>                             *
+//* James Denton <james.denton@outlook.com>                                         *
 //***********************************************************************************
 
-//Try to get the creatiom/mod dates to do something
-//Add while loops and make sure that there aren't any places where I assume the Lisa will be ready when I am.
-//Maybe switch everything over to a 5V Teensy MCU?
+// Written for ESP32-S2. May want to investigate ESP32-WROOM
 
 #include <Arduino.h>
 #include <SPI.h>
-#include "SdFat.h"
-#include "sdios.h"
+#include <SdFat.h>
 #include <EEPROM.h>
+
+#define PARALLEL_0  9     //Data Lines    (9-16) 18 is onboard LED
+#define PARALLEL_1  1     //Control Lines (1-8)
+
+#define PCMD        1
+#define PRW         3
+#define PSTRB       4
+#define PPRES       5
+#define PPARITY     6
+
+// SD Card
+const int chipSelect = 34;
+
+/*
+// Registers
+unsigned char controlRegister;
+unsigned char dataRegister;
+
+#define CONTROLREGISTER_BIT7_ON_PIN        8
+#define CONTROLREGISTER_BIT6_ON_PIN        7
+#define CONTROLREGISTER_BIT5_ON_PIN        6
+#define CONTROLREGISTER_BIT4_ON_PIN        5
+#define CONTROLREGISTER_BIT3_ON_PIN        4
+#define CONTROLREGISTER_BIT2_ON_PIN        3
+#define CONTROLREGISTER_BIT1_ON_PIN        2
+#define CONTROLREGISTER_BIT0_ON_PIN        1
+*/
 
 byte data[532] = {0x54, 0x68, 0x69, 0x73, 0x20, 0x74, 0x65, 0x73, 0x74, 0x20, 0x70, 0x75, 0x74, 0x73, 0x20, 0x61, 0x20, 0x6c, 0x6f, 0x74, 0x20, 0x6f, 0x66, 0x20, 0x73, 0x74, 0x72, 0x65, 0x73, 0x73, 0x20, 0x6f, 0x6e, 0x20, 0x74, 0x68, 0x65, 0x20, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x69, 0x6e, 0x67, 0x20, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x20, 0x62, 0x79, 0x20, 0x73, 0x77, 0x65, 0x65, 0x70, 0x69, 0x6e, 0x67, 0x20, 0x74, 0x68, 0x65, 0x20, 0x68, 0x65, 0x61, 0x64, 0x73, 0x20, 0x61, 0x63, 0x72, 0x6f, 0x73, 0x73, 0x20, 0x74, 0x68, 0x65, 0x20, 0x64, 0x69, 0x73, 0x6b, 0x20, 0x28, 0x72, 0x65, 0x61, 0x64, 0x69, 0x6e, 0x67, 0x20, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x20, 0x30, 0x2c, 0x20, 0x74, 0x68, 0x65, 0x6e, 0x20, 0x32, 0x35, 0x46, 0x45, 0x2c, 0x20, 0x74, 0x68, 0x65, 0x6e, 0x20, 0x32, 0x2c, 0x20, 0x74, 0x68, 0x65, 0x6e, 0x20, 0x32, 0x35, 0x46, 0x44, 0x2c, 0x20, 0x65, 0x74, 0x63, 0x29, 0x2e, 0x20, 0x49, 0x74, 0x20, 0x61, 0x6c, 0x73, 0x6f, 0x20, 0x72, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x73, 0x20, 0x61, 0x6e, 0x79, 0x20, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x73, 0x20, 0x74, 0x6f, 0x20, 0x74, 0x68, 0x65, 0x20, 0x75, 0x73, 0x65, 0x72, 0x2c, 0x20, 0x61, 0x6c, 0x6f, 0x6e, 0x67, 0x20, 0x77, 0x69, 0x74, 0x68, 0x20, 0x61, 0x6e, 0x20, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x70, 0x72, 0x65, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x20, 0x6f, 0x66, 0x20, 0x74, 0x68, 0x65, 0x20, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x20, 0x62, 0x79, 0x74, 0x65, 0x73, 0x20, 0x77, 0x68, 0x65, 0x6e, 0x20, 0x74, 0x68, 0x65, 0x20, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x20, 0x6f, 0x63, 0x63, 0x75, 0x72, 0x72, 0x65, 0x64, 0x2e, 0x20, 0x41, 0x6c, 0x74, 0x68, 0x6f, 0x75, 0x67, 0x68, 0x20, 0x74, 0x68, 0x65, 0x20, 0x41, 0x72, 0x64, 0x75, 0x69, 0x6e, 0x6f, 0x46, 0x69, 0x6c, 0x65, 0x20, 0x72, 0x65, 0x61, 0x64, 0x73, 0x20, 0x74, 0x68, 0x65, 0x20, 0x73, 0x70, 0x61, 0x72, 0x65, 0x20, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x20, 0x74, 0x6f, 0x20, 0x64, 0x65, 0x74, 0x65, 0x72, 0x6d, 0x69, 0x6e, 0x65, 0x20, 0x64, 0x72, 0x69, 0x76, 0x65, 0x20, 0x73, 0x69, 0x7a, 0x65, 0x20, 0x61, 0x75, 0x74, 0x6f, 0x6d, 0x61, 0x74, 0x69, 0x63, 0x61, 0x6c, 0x6c, 0x79, 0x2c, 0x20, 0x79, 0x6f, 0x75, 0x20, 0x63, 0x61, 0x6e, 0x20, 0x70, 0x72, 0x65, 0x73, 0x73, 0x20, 0x22, 0x6e, 0x22, 0x20, 0x61, 0x6e, 0x64, 0x20, 0x65, 0x6e, 0x74, 0x65, 0x72, 0x20, 0x61, 0x20, 0x63, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x20, 0x64, 0x72, 0x69, 0x76, 0x65, 0x20, 0x73, 0x69, 0x7a, 0x65, 0x20, 0x69, 0x6e, 0x20, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73, 0x20, 0x69, 0x66, 0x20, 0x79, 0x6f, 0x75, 0x20, 0x77, 0x61, 0x6e, 0x74, 0x2e, 0x20, 0x41, 0x6c, 0x74, 0x68, 0x6f, 0x75, 0x67, 0x68, 0x20, 0x74, 0x68, 0x65, 0x20, 0x41, 0x72, 0x64, 0x75, 0x69, 0x6e, 0x6f, 0x46, 0x69, 0x6c, 0x65, 0x20, 0x72, 0x65, 0x61, 0x64, 0x73, 0x20, 0x74, 0x68, 0x65, 0x20, 0x73, 0x70, 0x61, 0x72, 0x65, 0x20, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x20, 0x74, 0x6f, 0x20, 0x64, 0x65, 0x74, 0x65, 0x72, 0x6d, 0x69, 0x6e, 0x65, 0x20, 0x64, 0x72, 0x69, 0x76, 0x65, 0x20, 0x73, 0x69, 0x7a, 0x65, 0x20, 0x61, 0x75, 0x74, 0x6f, 0x6d, 0x61, 0x74, 0x69, 0x63, 0x61, 0x6c, 0x6c, 0x79, 0x2c, 0x20, 0x79, 0x6f, 0x75, 0x20, 0x63, 0x61, 0x6e, 0x20, 0x70, 0x72, 0x65, 0x73, 0x73, 0x20, 0x22, 0x6e, 0x22, 0x20, 0x61, 0x6e, 0x64, 0x20, 0x65, 0x6e, 0x74, 0x65}; //the array that holds the block that's currently being read or written
 
@@ -23,20 +47,20 @@ char fileName[256];
 byte commandBuffer[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //the 6-byte command buffer
 byte prevState = 1;
 byte currentState = 1; //variables that are used for falling edge detection on the strobe line
-int index = 0; //an index used when counting strobe pulses
+uint32_t myindex = 0; //an index used when counting strobe pulses
 byte *ogPointer;
 uint32_t byteNum;
 uint32_t startTime;
-uint16_t timeout = 10000; //around 18ms
+uint16_t timeout = 10; //10000 was around 18ms on atmega; need to clock ESP32
 uint16_t currentTime = 0;
+
 SdFat32 SD;
 File32 disk;
 File32 scratchFile;
 File32 sourceFile;
 File32 destFile;
-//File32 KVStore;
-//File32 KVCache;
 FatFile rootDir;
+
 int fileCount = 0;
 uint16_t nonce;
 uint16_t oldNonce;
@@ -46,86 +70,62 @@ uint16_t KVMoniker = 1024;
 uint16_t KVAutoboot = 1557;
 char extension[255] = ".image";
 uint32_t uptime = 0; //if this isn't originally zero, then it resets each time we do the stuff mentioned on the next line down.
-//uint32_t pointerTest = &uptime; //why is this needed to keep uptime from resetting each time we use the four bytes before data[] to store status?
 
-//byte KVKey[20];
-//byte CorrectKVKey[20] = {0x6D, 0x75, 0x6F, 0x97, 0xCD, 0xDA, 0xDE, 0x35, 0xF2, 0x4E, 0x6B, 0xA5, 0x88, 0x2F, 0x1A, 0x28, 0x34, 0x5B, 0x2D, 0xFA};
 
-const int red = 22;
-const int green = 23;
-const int blue = 24;
+const int red = 20;    // CHG 22 to 20
+const int green = 21;  // CHG 23 to 21
+const int blue = 26;   // CHG 24 to 26
+// JD What is pin 25?
 
 void setup(){
+  
   setLEDColor(1, 0, 0);
   Serial.begin(115200); //start serial communications
   Serial.println(F("Welcome to ArduinoFile"));
+
+  //Serial.print("SCK:"); Serial.println(SCK);
+  //Serial.print("MISO:"); Serial.println(MISO);
+  //Serial.print("MOSI:"); Serial.println(MOSI);
+  //Serial.print("SS:"); Serial.println(SS);
+
+  // Set data pins as inputs
+  for (int i = 0; i < 8; i++){
+    pinMode(PARALLEL_0 + i, INPUT);
+  }
+
+  // Set control pins as inputs
+  for (int i = 0; i < 8; i++){
+    pinMode(PARALLEL_1 + i, INPUT);
+  }
+  
   nonce = EEPROM.read(5);
   EEPROM.write(5, nonce + 1);
-  pinMode(22, OUTPUT);
-  pinMode(23, OUTPUT);
-  pinMode(24, OUTPUT);
-  pinMode(25, OUTPUT);
-  digitalWrite(25, HIGH);
+  pinMode(20, OUTPUT);  // CHG 22 to 20 RED
+  pinMode(21, OUTPUT);  // CHG 22 to 21 GREEN
+  pinMode(26, OUTPUT);  // CHG 22 to 26 BLUE
+  pinMode(33, OUTPUT);  // CHG 25 to 33
+  digitalWrite(33, HIGH);
 
-  SD.begin(); //initialize the SD card
-  rootDir.open("/");
-  /*if(!KVStore.open("keyvaluestore.db", O_RDWR)){
-    Serial.println(F("Key-value store not found! Creating it now..."));
-    if(!KVStore.createContiguous("keyvaluestore.db", 34864620)){
-      Serial.println(F("Failed to create key-value store! Halting..."));
-      while(1);
-    }
-    Serial.println(F("Done!"));
-  }
+  //Initialize the SD card
+  //SD.begin(); 
+  if (!SD.begin(chipSelect, SPI_HALF_SPEED)) SD.initErrorHalt();
+  //rootDir.open("/");
 
-
-  Serial.println(F("Wiping key-value cache..."));
-  rootDir.remove("keyvaluecache.db");
-  if(!KVCache.createContiguous("keyvaluecache.db", 34864620)){
-    Serial.println(F("Failed to clear key-value cache! Halting..."));
-    while(1);
-  }
-  Serial.println(F("Done!"));*/
+  //JD Test
+  //if (!rootDir.open("/")) {
+  //  SD.errorHalt(&Serial, F("dir.open failed"));
+  //}
 
   if(!disk.open("profile.image", O_RDWR)){
     Serial.println(F("Default drive file profile.image not found! Halting..."));
     while(1);
   }
-
-  /*KVCache.seekSet(532*65530);
-  KVCache.read(KVKey, 20);
-  for(int i = 0; i < 20; i++){
-    printDataNoSpace(KVKey[i]);
-  }
-  Serial.println();
-  int correct = 0;
-  for(int i = 0; i < 65535; i++){
-    Serial.println(i);
-    KVCache.seekSet(i * 532);
-    KVCache.read(KVKey, 20);
-    for(int i = 0; i < 20; i++){
-      if(KVKey[i] == CorrectKVKey[i]){
-        correct++;
-      }
-      if(correct == 20){
-        break;
-      }
-      correct = 0;
-    }
-  }
-  Serial.print("Found it at index ");
-  Serial.println(KVCache.curPosition());*/
+  
   updateSpareTable();
   setLEDColor(0, 1, 0);
   Serial.println(F("ArduinoFile is ready!"));
   disk.seekSet(0);
   disk.read(data, 532);
-  PORTE = PORTE & B11001111; //set the two pins that we're going to use for interrupts to inputs
-
-  EICRB |= B00001010;
-  EICRB &= B11111010; //set INT4 and INT5 to trigger on the falling edge
-  EIMSK |= (0 << INT4);
-  EIMSK |= (0 << INT5); //make sure that both interrupts are disabled initially (we actually never use INT5, but I might use it to speed things up in the future)
   delay(10);
 }
 
@@ -133,7 +133,11 @@ void loop() {
   initPins(); //set all pins to their idle states
   cli(); //disable interrupts to keep them from slowing things down
   while(readCMD() == 1); //wait for CMD to go low
-  if((PINL & B00010000) == B00000000){
+  /* // I'm not sure we want this
+  //if((PINL & B00010000) == B00000000){
+  Serial.print("Data Read: ");
+  Serial.println(dataRead(), BIN);
+  if((dataRead() & B00010000) == B00000000){
     sei();
     delay(10);
     Serial.println(F("Resetting drive..."));
@@ -142,26 +146,30 @@ void loop() {
     return;
   }
   cli();
+  */
   sendData(0x01); //send an 0x01 to the host
-  //PORTC = PORTC & B11011111;
   setBSY(); //and lower BSY to acknowledge our presence
   //startTime = millis();
   currentTime = 0;
-  while((PINC & B00000001) == B00000000){
+  //while((PINC & B00000001) == B00000000){
+  while((controlRead() & B00000001) == B00000000){
+    Serial.println("Waiting for initial handshake");
     currentTime++;
     if(currentTime >= timeout){
-      /*sei();
+      sei();
       Serial.println("Timeout: Initial Handshake");
-      cli();*/
+      cli();
       return;
     }
   } //wait for the host to raise CMD
   //while(readCMD() == 0);
-  DDRL = B00000000; //set the bus into input mode so we can read from it
-  //PORTC = PORTC | B00100000;
+  dataSetInputs();    //set the bus into input mode so we can read from it
+  //DDRL = B00000000; //set the bus into input mode so we can read from it
 
   currentTime = 0;
-  while(PINL != 0x55){ //wait for the host to respond with an 0x55 and timeout if it doesn't
+  //while(PINL != 0x55){ //wait for the host to respond with an 0x55 and timeout if it doesn't
+  while(dataRead() != 0x55){
+    Serial.println("Waiting for Phase 1");
     currentTime++;
     if(currentTime >= timeout){
       sei();
@@ -178,15 +186,19 @@ void loop() {
   byte *pointer = commandBuffer; //make the pointer point to the data array
   unsigned int value;
   ogPointer = pointer;
-  PORTC = PORTC | B00000010; //if everything checks out, raise BSY
+  //PORTC = PORTC | B00000010; //if everything checks out, raise BSY
+  Serial.println("Raising BSY");
+  controlWrite(controlRead() | B00000010);  //if everything checks out, raise BSY - might need to split this up
   setLEDColor(0, 1, 0);
   currentTime = 0;
-  byte oldPIN = 0;
-  while((PINC & B00000001) == B00000001){ //do this for each of the remaining data bytes and ((PINC | B11111011)) == B11111011
-    currentState = PINC & B00001000;
+  
+  //while((PINC & B00000001) == B00000001){ //do this for each of the remaining data bytes and ((PINC | B11111011)) == B11111011
+  while((controlRead() & B00000001) == B00000001){ //do this for each of the remaining data bytes and ((PINC | B11111011)) == B11111011
+    //currentState = PINC & B00001000;
+    currentState = (controlRead() & B00001000);
     if(currentState == B00000000 and prevState == B00001000){ //if we're on the falling edge of the strobe, put the next data byte on the bus and increment the pointer
-      *pointer++ = PINL;
-
+      //*pointer++ = PINL;
+      *pointer++ = dataRead();
     }
     currentTime++;
     if(currentTime >= timeout){
@@ -248,9 +260,11 @@ void readDrive(){
       return;
     }
   } //wait for the host to raise CMD
-  DDRL = B00000000; //set the bus into input mode
+  //DDRL = B00000000; //set the bus into input mode
+  dataSetInputs();  //set the bus into input mode
   currentTime = 0;
-  while(PINL != 0x55){ //wait for the host to respond with an 0x55 and timeout if it doesn't
+  //while(PINL != 0x55){ //wait for the host to respond with an 0x55 and timeout if it doesn't
+  while(dataRead() != 0x55){
     currentTime++;
     if(currentTime >= timeout){
       sei();
@@ -476,24 +490,6 @@ void readDrive(){
       Serial.println(F("Error: Unsupported key-value load operation!"));
     }
     //Moniker address is 5343 in the cache and 53656C6563746F723A20636F6E666967202020D7 in the store
-
-    //Serial.println(F("Warning: The attempted key-value cache read failed because key-value operations are not currently supported!"));
-    /*KVCache.seekSet((commandBuffer[4] << 8) | (commandBuffer[5]));
-    Serial.print(F("Reading entry "));
-    printDataNoSpace(commandBuffer[4]);
-    printDataNoSpace(commandBuffer[5]);
-    Serial.println(F(" from the key-value cache..."));
-    KVCache.read(data, 532);
-    Serial.print(F("Key: "));
-    for(int i = 0; i < 20; i++){
-      printDataNoSpace(data[i]);
-    }
-    Serial.println();
-    Serial.print(F("Value: "));
-    for(int i = 20; i < 532; i++){
-      printDataNoSpace(data[i]);
-    }
-    Serial.println();*/
     delay(1);
     cli();
   }
@@ -526,7 +522,7 @@ void readDrive(){
       }
       else{
         size_t n;
-        uint32_t index = 0;
+        uint32_t myindex = 0;
         while ((n = sourceFile.read(buf, sizeof(buf))) > 0){
           destFile.write(buf, n);
         }
@@ -630,21 +626,30 @@ void readDrive(){
     delay(1);
     cli();
   }
-  DDRL = B11111111; //set the bus into output mode
-  PORTL = 0x00; //and put the first status byte on the bus.
-  index = 0; //clear out the index
+  //DDRL = B11111111; //set the bus into output mode
+
+  //JD what are we doing here?
+  dataSetOutputs(); //set the bus into output mode
+  //PORTL = 0x00; //and put the first status byte on the bus.
+  dataWrite(0x00);   //and put the first status byte on the bus.
+  
+  myindex = 0; //clear out the index
   for(byte *i = data - 4; i < data; i++){
     *i = 0x00;
   }
   clearBSY(); //and raise BSY
-  //startTime = millis();
+  
   currentTime = 0;
   byte *pointer = data - 4; //make the pointer point to the data array
-  PORTL = *pointer++; //put the first data byte on the bus and increment the value of the pointer
-  while((PINC & B00000001) == B00000001){ //do this for each of the remaining data bytes
-    currentState = PINC & B00001000;
+  //PORTL = *pointer++; //put the first data byte on the bus and increment the value of the pointer
+  dataWrite(*pointer++); //put the first data byte on the bus and increment the value of the pointer
+  //while((PINC & B00000001) == B00000001){ //do this for each of the remaining data bytes
+  while((controlRead() & B00000001) == B00000001){  //do this for each of the remaining data bytes
+    //currentState = PINC & B00001000;
+    currentState = (controlRead() & B00001000);
     if(currentState == B00000000 and prevState == B00001000){ //if we're on the falling edge of the strobe, put the next data byte on the bus and increment the pointer
-      PORTL = *pointer++;
+      //PORTL = *pointer++;
+      dataWrite(*pointer++);
     }
     /*currentTime++;
     if(currentTime >= timeout){
@@ -670,9 +675,11 @@ void writeDrive(byte response){
       return;
     }
   } //wait for the host to raise CMD
-  DDRL = B00000000; //set the bus into input mode
+  //DDRL = B00000000; //set the bus into input mode
+  dataSetInputs();  //set the bus into input mode
   currentTime = 0;
-  while(PINL != 0x55){ //wait for the host to respond with an 0x55 and timeout if it doesn't
+  //while(PINL != 0x55){ //wait for the host to respond with an 0x55 and timeout if it doesn't
+  while(dataRead() != 0x55){
     currentTime++;
     if(currentTime >= timeout){
       sei();
@@ -687,10 +694,13 @@ void writeDrive(byte response){
 
   byte *pointer = data; //make the pointer point toward our data array
   currentTime = 0;
-  while((PINC & B00000001) == B00000001){ //do this for each of the 532 bytes that we're receiving
-    currentState = PINC & B00001000;
+  //while((PINC & B00000001) == B00000001){ //do this for each of the 532 bytes that we're receiving
+  while((controlRead() & B00000001) == B00000001){  //do this for each of the 532 bytes that we're receiving
+    //currentState = PINC & B00001000;
+    currentState = (controlRead() & B00001000);
     if(currentState == B00000000 and prevState == B00001000){ //when we detect a falling edge on the strobe line, read the data bus, save it contents into the data array, and increment the pointer
-      *pointer++ = PINL;
+      //*pointer++ = PINL;
+      *pointer++ = dataRead();
     }
     /*currentTime++;
     if(currentTime >= timeout){
@@ -723,9 +733,11 @@ void writeDrive(byte response){
       return;
     }
   } //wait for the host to raise CMD
-  DDRL = B00000000; //set the bus into input mode
+  //DDRL = B00000000; //set the bus into input mode
+  dataSetInputs();    //set the bus into input mode
   currentTime = 0;
-  while(PINL != 0x55){ //wait for the host to respond with an 0x55 and timeout if it doesn't
+  //while(PINL != 0x55){ //wait for the host to respond with an 0x55 and timeout if it doesn't
+  while(dataRead() != 0x55){    // Check for a 0x55
     currentTime++;
     if(currentTime >= timeout){
       sei();
@@ -836,7 +848,7 @@ void writeDrive(byte response){
         }
         else{
           size_t n;
-          uint32_t index = 0;
+          uint32_t myindex = 0;
           while ((n = sourceFile.read(buf, sizeof(buf))) > 0){
             destFile.write(buf, n);
           }
@@ -1003,15 +1015,22 @@ void writeDrive(byte response){
     cli();
   }
   clearBSY(); //if things look good, raise BSY
-  DDRL = B11111111; //and set the bus into output mode
+  
+  //DDRL = B11111111; //and set the bus into output mode
+  dataSetOutputs(); //and set the bus into output mode
+  
   currentTime = 0;
-  index = 0; //zero out the index
-  PORTL = 0x00; //and put the first status byte on the bus
-  while((PINC & B00000001) == B00000001){ //do this for the remaining three status bytes
-    currentState = PINC & B00001000;
+  myindex = 0; //zero out the index
+  //PORTL = 0x00; //and put the first status byte on the bus
+  dataWrite(0x00); //and put the first status byte on the bus
+  //while((PINC & B00000001) == B00000001){ //do this for the remaining three status bytes
+  while((controlRead() & B00000001) == B00000001){ //do this for the remaining three status bytes
+    //currentState = PINC & B00001000;
+    currentState = (controlRead() & B00001000);
     if(currentState == B00000000 and prevState == B00001000){ //if we're on the falling edge of the strobe, send the next status byte and increment the index
-      PORTL = 0x00;
-      index += 1;
+      //PORTL = 0x00;
+      dataWrite(0x00);
+      myindex += 1;
     }
     currentTime++;
     if(currentTime >= timeout){
@@ -1025,21 +1044,36 @@ void writeDrive(byte response){
 }
 
 void initPins(){
+  /*
   DDRC = B11000010; //set CHK, OCD, and BSY to outputs and the rest of the control signals to inputs
   clearBSY(); //make sure that BSY is raised
   DDRL = B00000000; //set the bus to input mode
   setPCHK();
   setPOCD(); //and lower CHK and OCD (is this really necessary?)
+  */
+  Serial.println("in initPins");
+  controlWrite(B11000010);  //set CHK, OCD, and BSY to outputs and the rest of the control signals to inputs
+  clearBSY(); //TBD
+  dataSetInputs();          //set the bus to input mode
+  //dataWrite(B00000000);   //This might be ised instead
+  setPCHK(); //TBD
+  setPOCD;   //TBD
 }
 
 void sendData(byte parallelBits){ //makes it more user-friendly to put data on the bus
-  DDRL = B11111111; //set the bus to output mode
-  PORTL = parallelBits; //and write the parallelBits to the bus
+  Serial.print("in sendData. Sending: ");
+  Serial.println(parallelBits, HEX);
+  dataSetOutputs();     //set the bus to output mode
+  //DDRL = B11111111; //set the bus to output mode
+  dataWrite(parallelBits);  //and write the parallelBits to the bus
+  //PORTL = parallelBits; //and write the parallelBits to the bus
 }
 
 byte receiveData(){ //makes it more user-friendly to receive data
-  DDRL = B00000000; //set the bus to input mode
-  return PINL; //and return whatever's on the bus
+  dataSetInputs();    //set the bus to input mode
+  return dataRead();  //and return whatever's on the bus
+  //DDRL = B00000000; //set the bus to input mode
+  //return PINL; //and return whatever's on the bus
 }
 
 void updateSpareTable(){
@@ -1090,55 +1124,84 @@ void updateSpareTable(){
 
 void setBSY(){
   setLEDColor(0, 0, 0);
-  PORTC = PORTC & B11111101;
+  //PORTC = PORTC & B11111101;
+  //uint8_t current = controlRead();
+  uint8_t current = controlReadOut(); 
+  Serial.println("in setBSY");
+  Serial.print("Current Control Register: ");
+  Serial.println(current, BIN);
+  controlWrite(current & B11111101);  // lower BSY and leave everything else as-is 
 }
 
 void clearBSY(){
   setLEDColor(0, 1, 0);
-  PORTC = PORTC | B00000010;
+  //PORTC = PORTC | B00000010;
+  Serial.println("in clearBSY");
+  //uint8_t current = controlRead();
+  uint8_t current = controlReadOut(); //(REG_READ(GPIO_OUT_REG));  // This is reading the entire register (and is correct)
+  Serial.print("Current Control Register: ");
+  Serial.println(current, BIN);
+  controlWrite(current & B00000010);  // raise BSY and leave everything else as-is  
 }
 
 void setPARITY(){
-  PORTC = PORTC & B11011111;
+  //PORTC = PORTC & B11011111;
+  uint8_t current = controlRead();
+  controlWrite(current & B11011111);  // lower PARITY and leave everything else as-is  
 }
 
 void clearPARITY(){
-  PORTC = PORTC | B00100000;
+  //PORTC = PORTC | B00100000;
+  uint8_t current = controlRead();
+  controlWrite(current & B00100000);  // raise PARITY and leave everything else as-is  
 }
 void setPCHK(){
-  PORTC = PORTC & B10111111;
+  //PORTC = PORTC & B10111111;
+  uint8_t current = controlReadOut();
+  controlWrite(current & B10111111);  // lower PCHK and leave everything else as-is  
 }
 
 void clearPCHK(){
-  PORTC = PORTC | B01000000;
+  //PORTC = PORTC | B01000000;
+  uint8_t current = controlRead();
+  controlWrite(current & B01000000);  // raise PCHK and leave everything else as-is  
 }
 
 void setPOCD(){
-  PORTC = PORTC & B01111111;
+  //PORTC = PORTC & B01111111;
+  uint8_t current = controlReadOut();
+  controlWrite(current & B01111111);  // lower POCD and leave everything else as-is  
 }
 
 void clearPOCD(){
-  PORTC = PORTC | B10000000;
+  //PORTC = PORTC | B10000000;
+  uint8_t current = controlRead();
+  controlWrite(current & B10000000);  // raise POCD and leave everything else as-is  
 }
 
 bool readCMD(){
-  return bitRead(PINC, 0);
+  return digitalRead(PCMD);
+  //return bitRead(PINC, 0);    //Return state of CMD pin (0)
 }
 
 bool readRW(){
-  return bitRead(PINC, 2);
+  return digitalRead(PRW);
+  //return bitRead(PINC, 2);
 }
 
 bool readSTRB(){
-  return bitRead(PINC, 3);
+  return digitalRead(PSTRB);
+  //return bitRead(PINC, 3);
 }
 
 bool readPRES(){
-  return bitRead(PINC, 4);
+  return digitalRead(PPRES);
+  //return bitRead(PINC, 4);
 }
 
 bool readParity(){
-  return bitRead(PINC, 5);
+  return digitalRead(PPARITY);
+  //return bitRead(PINC, 5);
 }
 
 void setLEDColor(bool r, bool g, bool b){
@@ -1203,4 +1266,65 @@ void printRawData(){
     }
   }
   Serial.println();
+}
+
+// My Functions
+void dataSetInputs(void){
+  Serial.println("in dataSetInputs");
+  REG_WRITE(GPIO_ENABLE_W1TC_REG, 0xFF << PARALLEL_0);
+}
+
+void dataSetOutputs(void){
+  Serial.println("in dataSetOutputs");
+  REG_WRITE(GPIO_ENABLE_W1TS_REG, 0xFF << PARALLEL_0);
+}
+
+void controlSetInputs(void){
+  Serial.println("in controlSetInputs");
+  REG_WRITE(GPIO_ENABLE_W1TC_REG, 0xFF << PARALLEL_1);
+}
+
+void controlSetOutputs(void){
+  Serial.println("in ControlSetOutputs");
+  REG_WRITE(GPIO_ENABLE_W1TS_REG, 0xFF << PARALLEL_1);
+}
+
+uint8_t dataRead(void){
+  Serial.println("in dataRead");
+  uint32_t input = REG_READ(GPIO_IN_REG);
+  return (input >> PARALLEL_0);
+}
+
+void dataWrite(uint8_t value){
+  uint32_t output =
+    (REG_READ(GPIO_OUT_REG) & ~(0xFF << PARALLEL_0)) | (((uint32_t)value) << PARALLEL_0);
+}
+
+uint8_t controlRead(void){
+  Serial.println("in controlRead");
+  uint32_t input = REG_READ(GPIO_IN_REG);
+  //Serial.print("Control Read: (in)");
+  //Serial.println(REG_READ(GPIO_IN_REG) >> PARALLEL_1, BIN);
+  //Serial.print("Control Read: (out)");
+  //Serial.println(REG_READ(GPIO_OUT_REG) >> PARALLEL_1, BIN);  
+  return (input >> PARALLEL_1);
+}
+
+uint8_t controlReadOut(void){
+  uint32_t fullReg = REG_READ(GPIO_OUT_REG);
+  return (fullReg >> PARALLEL_1);
+}
+
+void controlWrite(uint8_t value){
+  Serial.println("in controlWrite");
+  Serial.print("Writing: ");
+  Serial.println(value, BIN);
+  Serial.print("Begin GPIO_OUT_REG: ");
+  Serial.println((REG_READ(GPIO_OUT_REG)), BIN);
+  uint32_t output = (REG_READ(GPIO_OUT_REG) & ~(0xFF << PARALLEL_1)) | (((uint32_t)value) << PARALLEL_1);
+  REG_WRITE(GPIO_OUT_REG, output);  // Write to GPIO_OUT_REG
+  Serial.print("Writing new output: ");
+  Serial.println(output, BIN);
+  Serial.print("End GPIO_OUT_REG: ");
+  Serial.println((REG_READ(GPIO_OUT_REG)), BIN);
 }
